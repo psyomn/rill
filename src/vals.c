@@ -15,22 +15,12 @@ struct rill_packed vals
 
 typedef struct htable vals_rev_t;
 
-static size_t vals_cap(struct vals *vals)
-{
-    return sizeof(*vals) + vals->len * sizeof(vals->data[0]);
-}
-
-static rill_val_t vals_itov(struct vals *vals, size_t index)
-{
-    assert(index <= vals->len);
-    return vals->data[index - 1];
-}
-
 static size_t vals_vtoi(vals_rev_t *rev, rill_val_t val)
 {
     if (!val) return 0; // \todo giant hack for coder_finish
 
     struct htable_ret ret = htable_get(rev, val);
+    if (!ret.ok) { printf("checkvals: find: %zu\n", val); }
     assert(ret.ok);
     return ret.value;
 }
@@ -71,22 +61,41 @@ static void vals_compact(struct vals *vals)
     vals->len = j + 1;
 }
 
-static struct vals *vals_from_pairs(struct rill_pairs *pairs)
+static struct vals *from_pairs(struct rill_pairs *pairs, enum rill_col col)
 {
     struct vals *vals =
         calloc(1, sizeof(*vals) + sizeof(vals->data[0]) * pairs->len);
+
     if (!vals) return NULL;
 
     vals->len = pairs->len;
-    for (size_t i = 0; i < pairs->len; ++i)
-        vals->data[i] = pairs->data[i].val;
+    if (col == rill_col_a) {
+        for (size_t i = 0; i < pairs->len; ++i)
+            vals->data[i] = pairs->data[i].key;
+    }
+    else  {
+        for (size_t i = 0; i < pairs->len; ++i)
+            vals->data[i] = pairs->data[i].val;
+    }
 
     vals_compact(vals);
     return vals;
 }
 
+static inline struct vals *vals_from_pairs(struct rill_pairs *pairs)
+{
+    return from_pairs(pairs, rill_col_b);
+}
+
+static inline struct vals *keys_from_pairs(struct rill_pairs *pairs)
+{
+    return from_pairs(pairs, rill_col_a);
+}
+
 static struct vals *vals_merge(struct vals *vals, struct vals *merge)
 {
+    assert(merge);
+
     if (!vals) {
         size_t len = sizeof(*vals) + sizeof(vals->data[0]) * merge->len;
         vals = calloc(1, len);
@@ -109,15 +118,4 @@ static struct vals *vals_merge(struct vals *vals, struct vals *merge)
 
     vals_compact(vals);
     return vals;
-}
-
-static bool vals_contains(
-        struct vals *vals, const rill_val_t *items, size_t len)
-{
-    for (size_t i = 0, j = 0; i < len; ++i) {
-        while (j < vals->len && vals->data[j] < items[i]) j++;
-        if (vals->data[j] == items[i]) return true;
-    }
-
-    return false;
 }

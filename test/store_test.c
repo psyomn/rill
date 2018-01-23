@@ -104,7 +104,8 @@ static void check_scan_keys(
     struct rill_pairs *result = rill_pairs_new(128);
     rill_pairs_compact(pairs);
 
-    result = rill_store_scan_keys(store, keys->data, keys->len, result);
+    for (size_t i = 0; i < keys->len; ++i)
+        result = rill_store_query_key(store, keys->data[i], result);
 
     struct rill_pairs *exp = rill_pairs_new(128);
     for (size_t i = 0; i < pairs->len; ++i) {
@@ -185,15 +186,19 @@ static void check_scan_vals(
     struct rill_pairs *result = rill_pairs_new(128);
     rill_pairs_compact(pairs);
 
-    result = rill_store_scan_vals(store, vals->data, vals->len, result);
+    for (size_t i = 0; i < vals->len; ++i)
+        result = rill_store_query_value(store, vals->data[i], result);
 
     struct rill_pairs *exp = rill_pairs_new(128);
     for (size_t i = 0; i < pairs->len; ++i) {
         for (size_t j = 0; j < vals->len; ++j) {
             struct rill_kv *kv = &pairs->data[i];
-            if (kv->val == vals->data[j]) exp = rill_pairs_push(exp, kv->key, kv->val);
+            if (kv->val == vals->data[j])
+                exp = rill_pairs_push(exp, kv->val, kv->key);
         }
     }
+
+    rill_pairs_compact(exp);
 
     assert(exp->len == result->len);
     for (size_t i = 0; i < exp->len; ++i)
@@ -222,7 +227,6 @@ bool test_scan_vals(void)
         free(store);
         free(pairs);
     }
-
 
     {
         struct rill_pairs *pairs = make_pair(kv(2, 20), kv(3, 20), kv(3, 30), kv(4, 40));

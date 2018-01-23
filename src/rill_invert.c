@@ -52,7 +52,9 @@ int main(int argc, const char **argv)
             rill_store_pairs(src), pairs->cap);
 
     struct rill_kv kv;
-    struct rill_store_it *it = rill_store_begin(src);
+    // TODO I think invert is irrelevant for now, so adding random
+    // column to get things to compile
+    struct rill_store_it *it = rill_store_begin(src, rill_col_a);
 
     printf("%lu: reading...\n", shard_i);
 
