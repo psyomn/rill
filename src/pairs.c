@@ -74,7 +74,9 @@ struct rill_pairs *rill_pairs_reserve(struct rill_pairs *pairs, size_t cap)
 struct rill_pairs *rill_pairs_push(
         struct rill_pairs *pairs, rill_key_t key, rill_val_t val)
 {
-    assert(key && val);
+    assert(key);
+    assert(val);
+    assert(pairs);
 
     pairs = rill_pairs_reserve(pairs, pairs->len + 1);
     if (!pairs) return NULL;
@@ -125,4 +127,14 @@ void rill_pairs_print(const struct rill_pairs *pairs)
     }
 
     if (pairs->len) printf(" ]\n");
+}
+
+void rill_pairs_flip_values(struct rill_pairs* pairs)
+{
+    for (size_t i = 0; i < pairs->len; ++i) {
+        pairs->data[i] = (struct rill_kv) {
+            .key = pairs->data[i].val,
+            .val = pairs->data[i].key,
+        };
+    }
 }

@@ -65,12 +65,13 @@ static void indexer_put(struct indexer *indexer, rill_key_t key, uint64_t off)
 }
 
 static size_t indexer_write(
-        struct indexer *indexer, struct index *index, size_t cap)
+    struct indexer *indexer, struct index *index,
+    size_t vma_cap)
 {
     index->len = indexer->len;
 
     size_t len = indexer->len * sizeof(indexer->kvs[0]);
-    assert(len <= cap);
+    assert(len <= vma_cap);
 
     memcpy(index->data, indexer->kvs, len);
 
