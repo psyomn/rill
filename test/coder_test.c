@@ -188,6 +188,9 @@ void check_coder(struct rill_pairs *pairs)
         indexer_write(indexer_b, index_b, index_b_cap);
         indexer_free(indexer_a);
         indexer_free(indexer_b);
+
+        coder_close(&coder_a);
+        coder_close(&coder_b);
     }
 
     if (false) { // hex dump for debuging
