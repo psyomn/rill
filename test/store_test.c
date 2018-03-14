@@ -86,8 +86,8 @@ static void check_query_key(struct rill_pairs *pairs)
 
     free(result);
     rill_store_close(store);
-    free(pairs);
-    free(expected);
+    rill_pairs_free(pairs);
+    rill_pairs_free(expected);
 }
 
 bool test_query_key(void)
