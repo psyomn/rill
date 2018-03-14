@@ -48,7 +48,6 @@ struct rill_packed header
     uint64_t ts;
     uint64_t quant;
 
-    uint64_t keys;
     uint64_t pairs;
 
     uint64_t data_a_off;
@@ -57,7 +56,7 @@ struct rill_packed header
     uint64_t index_a_off;
     uint64_t index_b_off;
 
-    uint64_t reserved[1];
+    uint64_t reserved[2];
 
     uint64_t stamp;
 };
@@ -441,7 +440,6 @@ bool rill_store_write(
 
     writer_flush_indices(&store, indexer_a, indexer_b);
 
-    store.head->keys = coder_a.keys + coder_b.keys;
     store.head->pairs = coder_a.pairs;
 
     writer_close(&store, store.head->data_b_off + coder_off(&coder_b));
@@ -495,7 +493,6 @@ static bool merge_with_config(
   struct rill_kv kvs[list_len];
 
   struct decoder decoders[list_len];
-  // struct decoder decoders_b[list_len];
 
   size_t it_len = 0;
   for (size_t i = 0; i < list_len; ++i) {
@@ -549,7 +546,6 @@ bool rill_store_merge(
 {
     assert(list_len > 1);
 
-    size_t keys = 0;
     size_t pairs = 0;
     struct vals *vals = NULL;
     struct vals *invert_vals = NULL;
@@ -566,7 +562,6 @@ bool rill_store_merge(
         free(invert_merge_from_index);
 
         pairs += list[i]->head->pairs; // what's the difference between key count and index len count?
-        keys += list[i]->head->keys; // TODO REMOVE ME
 
         if (ret) { vals = ret; } else { goto fail_vals; }
         if (iret) { invert_vals = iret; } else { goto fail_invert_vals; }
@@ -599,7 +594,6 @@ bool rill_store_merge(
 
     writer_flush_indices(&store, indexer_a, indexer_b);
 
-    store.head->keys = encoder_a.keys + encoder_b.keys;
     store.head->pairs = encoder_a.pairs;
 
     writer_close(&store, store.head->data_b_off + coder_off(&encoder_b));
