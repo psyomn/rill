@@ -23,22 +23,24 @@ int main(int argc, char **argv)
     bool keys_b = false;
     bool pairs_a = false;
     bool pairs_b = false;
+    bool sanity = false;
 
     int opt = 0;
-    while ((opt = getopt(argc, argv, "+habABD")) != -1) {
+    while ((opt = getopt(argc, argv, "+habABDs")) != -1) {
         switch (opt) {
         case 'h': header = true; break;
         case 'a': keys_a = true; break;
         case 'b': keys_b = true; break;
         case 'A': pairs_a = true; break;
         case 'B': pairs_b = true; break;
+        case 's': sanity = true; break;
         default:
             fprintf(stderr, "unknown argument: %c\n", opt);
             usage();
         }
     }
 
-    if (!header && !keys_a && !keys_b && !pairs_a && !pairs_b) usage();
+    if (!header && !keys_a && !keys_b && !pairs_a && !pairs_b && !sanity) usage();
     if (optind >= argc) usage();
 
     struct rill_store *store = rill_store_open(argv[optind]);

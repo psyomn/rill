@@ -41,12 +41,14 @@ $CC -o rill_query "${PREFIX}/src/rill_query.c" librill.a $CFLAGS
 $CC -o rill_rotate "${PREFIX}/src/rill_rotate.c" librill.a $CFLAGS
 $CC -o rill_ingest "${PREFIX}/src/rill_ingest.c" librill.a $CFLAGS
 $CC -o rill_merge "${PREFIX}/src/rill_merge.c" librill.a $CFLAGS
+$CC -o rill_test "${PREFIX}/src/rill_sanity.c" librill.a $CFLAGS
 
 $CC -o rill_generate "${PREFIX}/test/rill_generate.c" librill.a $CFLAGS
 $CC -o test_indexer "${PREFIX}/test/indexer_test.c" librill.a $CFLAGS && ./test_indexer
 $CC -o test_coder "${PREFIX}/test/coder_test.c" librill.a $CFLAGS && ./test_coder
 $CC -o test_store "${PREFIX}/test/store_test.c" librill.a $CFLAGS && ./test_store
 $CC -o test_rotate "${PREFIX}/test/rotate_test.c" librill.a $CFLAGS
+$CC -o test_query "${PREFIX}/test/query_test.c" librill.a $CFLAGS && ./test_query
 
 LEAKCHECK_SUM=0
 if [ -n "$LEAKCHECK_ENABLED" ]
@@ -57,4 +59,6 @@ then
     $LEAKCHECK $LEAKCHECK_ARGS ./test_coder
     echo test_store =========================================
     $LEAKCHECK $LEAKCHECK_ARGS ./test_store
+    echo test_query =========================================
+    $LEAKCHECK $LEAKCHECK_ARGS ./test_query
 fi
