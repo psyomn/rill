@@ -189,11 +189,6 @@ struct rill_pairs *rill_query_vals(
         const rill_val_t *vals, size_t len,
         struct rill_pairs *out);
 
-struct rill_pairs *rill_query_all(
-        const struct rill_query *query,
-        const enum rill_col column);
-
-
 // -----------------------------------------------------------------------------
 // misc
 // -----------------------------------------------------------------------------
