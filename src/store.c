@@ -103,24 +103,27 @@ static struct decoder store_decoder_at(
         uint64_t curr_off,
         enum rill_col column)
 {
-    assert(column == rill_col_a || column == rill_col_b);
-
     size_t offset = 0;
     size_t offset_end = 0;
     struct index* lookup = NULL;
     struct index* index = NULL;
 
-    if (column == rill_col_a) {
+    switch (column) {
+    case rill_col_a:
         lookup = store->index_b;
         index  = store->index_a;
         offset = store->head->data_a_off;
         offset_end = store->head->data_b_off;
-    }
-    else {
+        break;
+    case rill_col_b:
         lookup = store->index_a;
         index  = store->index_b;
         offset = store->head->data_b_off;
         offset_end = store->vma_len;
+        break;
+    default:
+        rill_fail("improper rill col passed");
+        break;
     }
 
     return make_decoder_at(
@@ -135,7 +138,6 @@ static struct decoder store_decoder(
         struct rill_store *store,
         enum rill_col column)
 {
-    assert(column == rill_col_a || column == rill_col_b);
     return store_decoder_at(store, 0, 0, column);
 }
 
@@ -220,7 +222,7 @@ struct rill_store *rill_store_open(const char *file)
     }
 
     if (!is_supported_version(store->head->version)) {
-        rill_fail("invalid version '%zu' for '%s'", (uint64_t) store->head->version, file);
+        rill_fail("invalid version '%u' for '%s'", store->head->version, file);
         goto fail_version;
     }
 
@@ -302,7 +304,6 @@ static bool writer_open(
 
     store->vma_len = to_vma_len(len);
     store->vma = mmap(NULL, store->vma_len, PROT_WRITE | PROT_READ, MAP_SHARED, store->fd, 0);
-
     if (store->vma == MAP_FAILED) {
         rill_fail_errno("unable to mmap '%s'", file);
         goto fail_mmap;
