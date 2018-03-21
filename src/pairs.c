@@ -127,7 +127,7 @@ void rill_pairs_print(const struct rill_pairs *pairs)
     if (pairs->len) printf(" ]\n");
 }
 
-void rill_pairs_flip_values(struct rill_pairs* pairs)
+void rill_pairs_invert(struct rill_pairs* pairs)
 {
     for (size_t i = 0; i < pairs->len; ++i) {
         pairs->data[i] = (struct rill_kv) {

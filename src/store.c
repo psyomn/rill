@@ -430,7 +430,7 @@ bool rill_store_write(
     struct encoder coder_b =
         store_encoder(&store, indexer_b, invert_vals, store.head->data_b_off);
 
-    rill_pairs_flip_values(pairs);
+    rill_pairs_invert(pairs);
     rill_pairs_compact(pairs); /* recompact mainly for sort */
 
     for (size_t i = 0; i < pairs->len; ++i) {

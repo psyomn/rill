@@ -90,7 +90,7 @@ void rill_pairs_compact(struct rill_pairs *pairs);
 
 void rill_pairs_print(const struct rill_pairs *pairs);
 
-void rill_pairs_flip_values(struct rill_pairs* pairs);
+void rill_pairs_invert(struct rill_pairs* pairs);
 
 
 // -----------------------------------------------------------------------------
