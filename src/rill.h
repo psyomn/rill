@@ -101,6 +101,7 @@ enum rill_col { rill_col_a = 0, rill_col_b = 1 };
 
 struct rill_store;
 struct rill_store_it;
+struct rill_space;
 
 struct rill_store *rill_store_open(const char *file);
 void rill_store_close(struct rill_store *store);
@@ -125,6 +126,13 @@ size_t rill_store_quant(const struct rill_store *store);
 size_t rill_store_keys_count(const struct rill_store *store, enum rill_col column);
 size_t rill_store_pairs(const struct rill_store *store);
 size_t rill_store_index_len(const struct rill_store *store, enum rill_col col);
+
+
+struct rill_space* rill_store_space(struct rill_store *store);
+size_t rill_store_space_header(struct rill_space *space);
+size_t rill_store_space_index(struct rill_space *space, enum rill_col col);
+size_t rill_store_space_pairs(struct rill_space *space, enum rill_col col);
+void rill_space_free(struct rill_space* space);
 
 
 struct rill_pairs *rill_store_query_value(

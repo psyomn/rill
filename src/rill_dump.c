@@ -12,7 +12,7 @@
 
 void usage()
 {
-    fprintf(stderr, "rill_dump [-h] [-k] [-p] -<a|b> <file>\n");
+    fprintf(stderr, "rill_dump [-h] [-k] [-p] [-m] -<a|b> <file>\n");
     exit(1);
 }
 
@@ -23,22 +23,24 @@ int main(int argc, char **argv)
     bool pairs = false;
     bool a = false;
     bool b = false;
+    bool space = false;
 
     int opt = 0;
-    while ((opt = getopt(argc, argv, "+habkp")) != -1) {
+    while ((opt = getopt(argc, argv, "+habkpm")) != -1) {
         switch (opt) {
         case 'h': header = true; break;
         case 'k': key = true; break;
         case 'p': pairs = true; break;
         case 'a': a = true; break;
         case 'b': b = true; break;
+        case 'm': space = true; break;
         default:
             fprintf(stderr, "unknown argument: %c\n", opt);
             usage();
         }
     }
 
-    if (!header && !a && !b && !a && !pairs && !key) usage();
+    if (!header && !a && !b && !a && !pairs && !key && !space) usage();
     if (optind >= argc) usage();
 
     struct rill_store *store = rill_store_open(argv[optind]);
@@ -86,6 +88,26 @@ int main(int argc, char **argv)
         }
 
         rill_store_it_free(it);
+    }
+
+    if (space) {
+        struct rill_space* space = rill_store_space(store);
+
+        printf(
+            "size stats  : %s\n"
+            "header size : %zu\n"
+            "index a size: %zu\n"
+            "index b size: %zu\n"
+            "data a size : %zu\n"
+            "data b size : %zu\n",
+            rill_store_file(store),
+            rill_store_space_header(space),
+            rill_store_space_index(space, rill_col_a),
+            rill_store_space_index(space, rill_col_b),
+            rill_store_space_pairs(space, rill_col_a),
+            rill_store_space_pairs(space, rill_col_b));
+
+        free(space);
     }
 
     rill_store_close(store);

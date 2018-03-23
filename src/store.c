@@ -79,6 +79,13 @@ struct rill_store
     uint8_t *end;
 };
 
+struct rill_space
+{
+    size_t header_bytes;
+    size_t index_bytes[2];
+    size_t pairs_bytes[2];
+};
+
 
 // -----------------------------------------------------------------------------
 // coder
@@ -755,4 +762,31 @@ void rill_store_it_free(struct rill_store_it *it)
 bool rill_store_it_next(struct rill_store_it *it, struct rill_kv *kv)
 {
     return coder_decode(&it->decoder, kv);
+}
+
+struct rill_space* rill_store_space(struct rill_store* store)
+{
+    struct rill_space *ret = calloc(1, sizeof(*ret));
+
+    *ret =  (struct rill_space) {
+        .header_bytes = sizeof(*store->head),
+        .index_bytes[rill_col_a] = (store->head->index_b_off - store->head->index_a_off) * sizeof(store->index_a[0]),
+        .index_bytes[rill_col_b] = (store->head->data_a_off - store->head->index_b_off) * sizeof(store->index_b[0]),
+        .pairs_bytes[rill_col_a] = store->head->data_b_off - store->head->data_a_off,
+        .pairs_bytes[rill_col_b] = store->vma_len - store->head->data_b_off,
+    };
+
+    return ret;
+}
+
+size_t rill_store_space_header(struct rill_space* space) {
+    return space->header_bytes;
+}
+size_t rill_store_space_index(struct rill_space* space, enum rill_col col) {
+    assert(col == rill_col_a || col == rill_col_b);
+    return space->index_bytes[col];
+}
+size_t rill_store_space_pairs(struct rill_space* space, enum rill_col col) {
+    assert(col == rill_col_a || col == rill_col_b);
+    return space->pairs_bytes[col];
 }
