@@ -223,6 +223,11 @@ struct rill_store *rill_store_open(const char *file)
     store->data_b = (void *) ((uintptr_t) store->vma + store->head->data_b_off);
     store->end = (void *) ((uintptr_t) store->vma + store->vma_len);
 
+    printf("offset index a: 0x%lx\n", store->head->index_a_off);
+    printf("offset index b: 0x%lx\n", store->head->index_b_off);
+    printf("offset data a:  0x%lx\n", store->head->data_a_off);
+    printf("offset data b:  0x%lx\n", store->head->data_b_off);
+
     if (store->head->magic != magic) {
         rill_fail("invalid magic '0x%x' for '%s'", store->head->magic, file);
         goto fail_magic;
@@ -770,8 +775,8 @@ struct rill_space* rill_store_space(struct rill_store* store)
 
     *ret =  (struct rill_space) {
         .header_bytes = sizeof(*store->head),
-        .index_bytes[rill_col_a] = (store->head->index_b_off - store->head->index_a_off) * sizeof(store->index_a[0]),
-        .index_bytes[rill_col_b] = (store->head->data_a_off - store->head->index_b_off) * sizeof(store->index_b[0]),
+        .index_bytes[rill_col_a] = store->head->index_b_off - store->head->index_a_off,
+        .index_bytes[rill_col_b] = store->head->data_a_off - store->head->index_b_off,
         .pairs_bytes[rill_col_a] = store->head->data_b_off - store->head->data_a_off,
         .pairs_bytes[rill_col_b] = store->vma_len - store->head->data_b_off,
     };
