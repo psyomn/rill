@@ -304,8 +304,8 @@ static bool writer_open(
 
     size_t len =
         sizeof(struct header) +
-        indexer_cap(pairs) +
-        indexer_cap(pairs) +
+        indexer_cap(inverted_vals->len) +
+        indexer_cap(vals->len) +
         coder_cap(vals->len, pairs) +
         coder_cap(inverted_vals->len, pairs);
 
@@ -386,10 +386,11 @@ static void writer_close(
     close(store->fd);
 }
 
-static void init_store_offsets(struct rill_store* store, uint64_t pairs)
+static void init_store_offsets(
+    struct rill_store* store, size_t vals, size_t inverse_vals)
 {
-    store->head->index_b_off = store->head->index_a_off + indexer_cap(pairs);
-    store->head->data_a_off = store->head->index_b_off + indexer_cap(pairs);
+    store->head->index_b_off = store->head->index_a_off + indexer_cap(inverse_vals);
+    store->head->data_a_off = store->head->index_b_off + indexer_cap(vals);
 
     store->index_a = (void *) ((uintptr_t) store->vma + store->head->index_a_off);
     store->index_b = (void *) ((uintptr_t) store->vma + store->head->index_b_off);
@@ -423,12 +424,12 @@ bool rill_store_write(
         goto fail_open;
     }
 
-    struct indexer *indexer_a = indexer_alloc(pairs->len); // TODO catch fail alloc here
+    struct indexer *indexer_a = indexer_alloc(invert_vals->len); // TODO catch fail alloc here
     if (!indexer_a) goto fail_indexer_a_alloc;
-    struct indexer *indexer_b = indexer_alloc(pairs->len); // TODO catch fail alloc here
+    struct indexer *indexer_b = indexer_alloc(vals->len); // TODO catch fail alloc here
     if (!indexer_b) goto fail_indexer_b_alloc;
 
-    init_store_offsets(&store, pairs->len);
+    init_store_offsets(&store, vals->len, invert_vals->len);
 
     struct encoder coder_a =
         store_encoder(&store, indexer_a, vals, store.head->data_a_off);
@@ -587,7 +588,7 @@ bool rill_store_merge(
         goto fail_open;
     }
 
-    init_store_offsets(&store, pairs);
+    init_store_offsets(&store, vals->len, invert_vals->len);
 
     struct indexer *indexer_a = indexer_alloc(pairs);
     if (!indexer_a) goto fail_index_a;
