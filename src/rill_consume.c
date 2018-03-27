@@ -14,7 +14,8 @@ int main(int argc, char* argv[]) {
     (void) argc, (void) argv;
     FILE* sin = freopen(NULL, "rb", stdin);
     size_t pairs_left = 0, pairs_count = 0;
-    fread(&pairs_count, sizeof(pairs_count), 1, sin);
+
+    (void) fread(&pairs_count, sizeof(pairs_count), 1, sin);
 
     enum { max_shards = 10 };
     const size_t chunk = pairs_count / max_shards;
@@ -33,7 +34,7 @@ int main(int argc, char* argv[]) {
 
         for (size_t i = 0; i < read_amount; ++i) {
             struct rill_kv kvs = {0};
-            fread(&kvs, 1, sizeof(kvs), sin);
+            (void) fread(&kvs, 1, sizeof(kvs), sin);
             pairs = rill_pairs_push(pairs, kvs.key, kvs.val);
         }
 
