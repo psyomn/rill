@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     size_t pairs_left = 0, pairs_count = 0;
     fread(&pairs_count, sizeof(pairs_count), 1, sin);
 
-    enum { max_shards = 10, chunked_pairs = 8192 };
+    enum { max_shards = 10 };
     const size_t chunk = pairs_count / max_shards;
     char buffer[PATH_MAX];
 
@@ -30,20 +30,12 @@ int main(int argc, char* argv[]) {
         /* handle odd number of pairs that go above chunks */
         read_amount += pairs_left - chunk < chunk ? pairs_left - chunk : 0;
 
-        size_t smaller_chunk = read_amount;
 
-        while (smaller_chunk > 0) {
-            struct rill_kv kvs[chunked_pairs];
-            const size_t amount =
-                chunked_pairs < smaller_chunk ?
-                chunked_pairs : smaller_chunk;
-
-            fread(&kvs, amount, sizeof(kvs), sin);
-
-            for (size_t x = 0; x < amount; ++x)
-                pairs = rill_pairs_push(pairs, kvs[x].key, kvs[x].val);
+        for (size_t i = 0; i < read_amount; ++i) {
+            struct rill_kv kvs = {0};
+            fread(&kvs, 1, sizeof(kvs), sin);
+            pairs = rill_pairs_push(pairs, kvs.key, kvs.val);
         }
-
 
         pairs_left -= read_amount;
 
