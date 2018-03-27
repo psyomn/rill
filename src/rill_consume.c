@@ -31,7 +31,6 @@ int main(int argc, char* argv[]) {
         /* handle odd number of pairs that go above chunks */
         read_amount += pairs_left - chunk < chunk ? pairs_left - chunk : 0;
 
-
         for (size_t i = 0; i < read_amount; ++i) {
             struct rill_kv kvs = {0};
             (void) fread(&kvs, 1, sizeof(kvs), sin);
