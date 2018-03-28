@@ -14,7 +14,7 @@ static inline void make_filename(char path[static PATH_MAX], size_t num) {
 int main(int argc, char* argv[]) {
     (void) argc, (void) argv;
 
-    enum { max_shards = 10, page = 8192 };
+    enum { max_shards = 10, page = 1016 };
     FILE* sin = freopen(NULL, "rb", stdin);
 
     size_t pairs_count = 0;
@@ -46,10 +46,17 @@ int main(int argc, char* argv[]) {
         /* handle odd number of pairs that go above chunks */
         read_amount += pairs_left - chunk < chunk ? pairs_left - chunk : 0;
 
-        for (size_t i = 0; i < read_amount; ++i) {
-            struct rill_kv kvs = {0};
-            if(!fread(&kvs, 1, sizeof(kvs), sin)) abort();
-            pairs = rill_pairs_push(pairs, kvs.key, kvs.val);
+        size_t to_read = read_amount;
+
+        while (to_read > 0) {
+            struct rill_kv kvs[page];
+            size_t current_chunk = page < to_read ? page : to_read;
+
+            if(!fread(kvs, sizeof(kvs[0]), current_chunk, sin)) abort();
+            for (size_t a = 0; a < current_chunk; ++a)
+                pairs = rill_pairs_push(pairs, kvs[a].key, kvs[a].val);
+
+            to_read -= current_chunk;
         }
 
         pairs_left -= read_amount;
