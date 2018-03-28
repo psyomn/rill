@@ -19,12 +19,16 @@ int main(int argc, char* argv[]) {
     struct rill_store* store = rill_store_open(argv[1]);
     struct rill_store_it *it = rill_store_begin(store);
     const size_t pairs_count = rill_store_pairs(store);
+    const char* filename = rill_store_file(store);
+    const size_t filename_size = strlen(filename);
 
     const rill_ts_t ts = rill_store_ts(store);
     const size_t quant = rill_store_quant(store);
 
     struct rill_kv kv = {0};
 
+    fwrite(&filename_size, sizeof(filename_size), 1, sout);
+    fwrite(filename, sizeof(*filename), filename_size, sout);
     fwrite(&ts, sizeof(ts), 1, sout);
     fwrite(&quant, sizeof(quant), 1, sout);
     fwrite(&pairs_count, sizeof(pairs_count), 1, sout);
