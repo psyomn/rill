@@ -14,7 +14,7 @@ static inline void make_filename(char path[static PATH_MAX], size_t num) {
 int main(int argc, char* argv[]) {
     (void) argc, (void) argv;
 
-    enum { max_shards = 10 };
+    enum { max_shards = 10, page = 8192 };
     FILE* sin = freopen(NULL, "rb", stdin);
 
     size_t pairs_count = 0;
@@ -24,8 +24,7 @@ int main(int argc, char* argv[]) {
     char* filename = NULL;
 
     if (!fread(&filename_size, sizeof(filename_size), 1, sin)) abort();
-    filename_size += 20; // used for strncat later
-    filename = calloc(filename_size, sizeof(*filename));
+    filename = calloc(filename_size + 20, sizeof(*filename));
 
     if (!fread(filename, sizeof(*filename), filename_size, sin)) abort();
 
@@ -34,12 +33,6 @@ int main(int argc, char* argv[]) {
     if (!fread(&pairs_count, sizeof(pairs_count), 1, sin)) abort();
 
     const size_t chunk = pairs_count / max_shards;
-
-    printf("pairs count: %zu\n", pairs_count);
-    printf("chunk:       %zu\n", chunk);
-    printf("ts:          %zu\n", ts);
-    printf("quant:       %zu\n", quant);
-
     char buffer[PATH_MAX];
 
     size_t pairs_left = pairs_count;
