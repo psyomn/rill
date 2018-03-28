@@ -1,5 +1,9 @@
 #include "rill.h"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -38,7 +42,6 @@ int main(int argc, char* argv[]) {
     size_t pairs_left = pairs_count;
 
     for (size_t j = 0; j < max_shards; ++j) {
-        make_filename(buffer, j);
 
         struct rill_pairs* pairs = rill_pairs_new(chunk);
         size_t read_amount = chunk >= pairs_left ? pairs_left : chunk;
@@ -62,11 +65,20 @@ int main(int argc, char* argv[]) {
         pairs_left -= read_amount;
 
         /* fork child here? */
-        if(!rill_store_write(buffer, 0, 0, pairs)) {
-            fprintf(stderr, "problem writing shard\n");
-            exit(1);
+        // no children should be running when parent hits this place
+        // again
+
+        wait(NULL);
+        pid_t pid = fork();
+        if (pid == 0) {
+            make_filename(buffer, j);
+            if(!rill_store_write(buffer, 0, 0, pairs)) {
+                fprintf(stderr, "problem writing shard\n");
+                exit(1);
+            }
+            rill_pairs_free(pairs);
+            return 0;
         }
-        rill_pairs_free(pairs);
         /* end fork child here? */
     }
     fclose(sin);
