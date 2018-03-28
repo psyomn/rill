@@ -34,6 +34,12 @@ int main(int argc, char* argv[]) {
     if (!fread(&pairs_count, sizeof(pairs_count), 1, sin)) abort();
 
     const size_t chunk = pairs_count / max_shards;
+
+    printf("pairs count: %zu\n", pairs_count);
+    printf("chunk:       %zu\n", chunk);
+    printf("ts:          %zu\n", ts);
+    printf("quant:       %zu\n", quant);
+
     char buffer[PATH_MAX];
 
     size_t pairs_left = pairs_count;
@@ -42,8 +48,7 @@ int main(int argc, char* argv[]) {
         make_filename(buffer, j);
 
         struct rill_pairs* pairs = rill_pairs_new(chunk);
-        size_t read_amount =
-            chunk >= pairs_left ? pairs_left : chunk;
+        size_t read_amount = chunk >= pairs_left ? pairs_left : chunk;
 
         /* handle odd number of pairs that go above chunks */
         read_amount += pairs_left - chunk < chunk ? pairs_left - chunk : 0;
@@ -66,7 +71,6 @@ int main(int argc, char* argv[]) {
     }
     fclose(sin);
 
-    /* 00012.rill -> 00012.rill.convert */
     strncat(filename, ".convert", filename_size);
 
     struct rill_store *stores[max_shards];
